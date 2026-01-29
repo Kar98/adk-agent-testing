@@ -1,6 +1,5 @@
 from google.adk.agents import Agent, SequentialAgent
 from google.adk.tools.tool_context import ToolContext
-from google.adk.models.lite_llm import LiteLlm # For multi-model support
 from google.adk.sessions import InMemorySessionService
 from google.adk.runners import Runner
 from google.genai import types # For creating message Content/Parts
@@ -16,7 +15,7 @@ import os
 warnings.filterwarnings("ignore")
 
 # Use one of the model constants defined earlier
-MODEL_GEMINI_FLASH = "gemini-2.5-flash-lite"
+MODEL_GEMINI_FLASH = "gemini-2.5-flash"
 
 fact_agent = None
 validation_agent = None
@@ -31,7 +30,7 @@ known_facts = [
 
 def get_fact() -> dict:
     """
-    Gets a fact about a musician
+    Gets a fact about a musician. 
     
     :return: A dictionary containing the fact.
             Includes a 'status' key ('success' or 'error').
@@ -53,8 +52,9 @@ def get_fact() -> dict:
         model=MODEL_GEMINI_FLASH,
         contents=[
             fileupload,
-            "This file is a transcript of an interview between an interviewer and the musician Taylor Swift. From this interview get a single fact that is 1 sentence long."\
-            "Only return the fact. Do not include any markup in the response"
+            "This file is a transcript of an interview between an interviewer and the musician Taylor Swift. Parse the interview and get a series of facts about Taylor, then "\
+            "randomly return 1 of these facts. " \
+            "Only return the fact. Do not include any markup in the response."
             ],
     )
 
@@ -88,6 +88,7 @@ def validate_fact(fact: str) -> dict:
     return {"status": "success", "fact_is_valid": response.text}
 
 def add_fact(fact: str):
+    print("--call add_fact")
     print(f"new fact addded {fact}")
     known_facts.append(fact)
 
@@ -136,11 +137,11 @@ validation_agent = Agent(
 
 updating_agent = Agent(
     model=MODEL_GEMINI_FLASH,
-    name="validation_agent",
+    name="updating_agent",
     instruction=
     "You are an agent who updates the fact list only if it's a valid fact. "\
     "The fact is either true or false. "\
-    "If the fact is valid call the 'add_fact' function and add the fact '{fact}', then call the tool 'log_info'. If false then log info using 'log_info'. "\
+    "If the fact is valid, call the 'add_fact' function and add the fact '{fact}', then call the tool 'log_info'. If false then log info using 'log_info'. "\
     "fact = {fact_is_valid}",
     description="Validates any facts that are given to it.",
     tools=[add_fact, log_info]

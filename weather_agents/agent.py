@@ -1,7 +1,6 @@
 
 from google.adk.agents import Agent
 from google.adk.tools.tool_context import ToolContext
-from google.adk.models.lite_llm import LiteLlm # For multi-model support
 from google.adk.sessions import InMemorySessionService
 from google.adk.runners import Runner
 from google.genai import types # For creating message Content/Parts
